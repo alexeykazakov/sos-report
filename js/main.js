@@ -3,7 +3,7 @@ const elem = form.elements;
 
 let getLastWeekDate = function () {
   let date = new Date();
-  date.setDate(date.getDate()-5);
+  date.setDate(date.getDate()-6);
   let year = date.getFullYear();
   let month = date.getMonth()+1;
   let day = date.getDate();
@@ -46,7 +46,8 @@ let buildReport = function() {
   let team = elem.team.value;
   let sprint = elem.sprint.value;
   let done_query = `type:pr is:closed closed:>` + start;
-  let doing_query = `type:issue is:open label:${team} milestone:"${sprint}"`;
+  let doing_query = `type:issue is:open milestone:"${sprint}"`;
+  // let doing_query = `type:issue is:open label:${team} milestone:"${sprint}"`;
   let dep_query = `type:issue is:open label:${team} label:issue/crucial-dep `;
   let integration_query = `type:issue is:open label:${team} label:issue/integration`;
   let blocker_query = `type:issue is:open label:${team} label:issue/blocker`;
@@ -76,7 +77,7 @@ let buildReport = function() {
       let title = item.title.split('):');
       done_list.insertAdjacentHTML('beforeend',`
         <li>
-          <a href="${item.html_url}">#${item.number}</a> - ${title[1]?title[1]:item.title} 
+          <a href="${item.html_url}">#${item.number}</a> - ${title[1]?title[1]:item.title}
         </li>
       `);
     });
@@ -86,9 +87,13 @@ let buildReport = function() {
   let printIssues = function(result) {
     let items = result.items;
     items.forEach(function (item) {
+      let labels = ' ';
+      item.labels.forEach(function (label) {
+        labels = labels + label.name
+      });
       doing_list.insertAdjacentHTML('beforeend',`
         <li>
-          <a href="${item.html_url}">#${item.number}</a> - ${item.title}
+          <a href="${item.html_url}">#${item.number}</a> - <b>${labels}:</b> ${item.title}
         </li>
       `);
     });
