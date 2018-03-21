@@ -46,6 +46,7 @@ let buildReport = function() {
   let team = elem.team.value;
   let sprint = elem.sprint.value;
   let done_query = `type:pr is:closed closed:>` + start;
+  let done_issues_query = `type:issue is:closed closed:>` + start;
   let doing_query = `type:issue is:open milestone:"${sprint}"`;
   // let doing_query = `type:issue is:open label:${team} milestone:"${sprint}"`;
   let dep_query = `type:issue is:open label:${team} label:issue/crucial-dep `;
@@ -65,6 +66,16 @@ let buildReport = function() {
   let printPR = function(result) {
     let items = result.items;
     items.forEach(function (item) {
+      let labels = ' ';
+      let sb = 1;
+      item.labels.forEach(function (label) {
+        labels = labels + label.name + ', '
+        sb = 2;
+      });
+      labels = labels.substring(0, labels.length-sb);
+      if (labels.length>0) {
+        labels = labels + ': '
+      }
       let body = '';
       if (item.body && item.body !== '') {
         body = `
@@ -77,7 +88,7 @@ let buildReport = function() {
       let title = item.title.split('):');
       done_list.insertAdjacentHTML('beforeend',`
         <li>
-          <a href="${item.html_url}">#${item.number}</a> - ${title[1]?title[1]:item.title}
+          <a href="${item.html_url}">#${item.number}</a> - <b>${labels}</b>${title[1]?title[1]:item.title}
         </li>
       `);
     });
@@ -88,12 +99,18 @@ let buildReport = function() {
     let items = result.items;
     items.forEach(function (item) {
       let labels = ' ';
+      let sb = 1;
       item.labels.forEach(function (label) {
-        labels = labels + label.name
+        labels = labels + label.name + ', '
+        sb = 2;
       });
+      labels = labels.substring(0, labels.length-sb);
+      if (labels.length>0) {
+        labels = labels + ': '
+      }
       doing_list.insertAdjacentHTML('beforeend',`
         <li>
-          <a href="${item.html_url}">#${item.number}</a> - <b>${labels}:</b> ${item.title}
+          <a href="${item.html_url}">#${item.number}</a> - <b>${labels}</b>${item.title}
         </li>
       `);
     });
@@ -131,6 +148,9 @@ let buildReport = function() {
 
   github_api_PR_repos.forEach(function (repo) {
     getReport(repo, done_query, printPR);
+  });
+  github_api_PR_repos.forEach(function (repo) {
+    getReport(repo, done_issues_query, printPR);
   });
   github_api_issues_repos.forEach(function (repo) {
     getReport(repo, doing_query, printIssues);
